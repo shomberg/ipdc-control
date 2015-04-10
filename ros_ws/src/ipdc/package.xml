@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package>
+  <name>ipdc</name>
+  <version>0.0.0</version>
+  <description>Package for control of KUKA arm for the Interactive Physical Design Computing project</description>
+
+  <maintainer email="djs2@mit.edu">Daniel Smithwick</maintainer>
+
+  <license>MIT</license>
+
+  <url type="website">https://github.com/shomberg/ipdc-control</url>
+
+  <author email="shomberg@mit.edu">Steven Homberg</author>
+  <author email="jaguark@mit.edu">Jaguar Kristeller</author>
+  <author email="dgretton@mit.edu">Dana Gretton</author>
+
+  <build_depend>message_generation</build_depend>
+  <run_depend>message_runtime</run_depend>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+
+</package>

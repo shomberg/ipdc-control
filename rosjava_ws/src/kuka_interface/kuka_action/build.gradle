@@ -30,6 +30,7 @@ dependencies {
   /* An external maven artifact dependency */
   compile 'org.ros.rosjava_core:rosjava:[0.2,0.3)'
   compile 'org.ros.rosjava_messages:kuka_msgs:0.0.+'
+  compile files('lib/JOpenShowVar-core_0.2.3.jar')
   /* Example of a local subproject dependency */ 
   /* compile project(':sibling_gradle_project') */
 }

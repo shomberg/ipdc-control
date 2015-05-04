@@ -57,9 +57,9 @@ int main(void){
       }
     }
 
-    /*for(int i = 0; i < contours.size(); i++){
+    for(int i = 0; i < contours.size(); i++){
       cv::convexHull(contours[i], contours[i]);
-      }*/
+    }
 
     cv::Mat contourIm(frame.size(),CV_8UC3,cv::Scalar(0,0,0));
     for(int i = 0; i < contours.size(); i++){

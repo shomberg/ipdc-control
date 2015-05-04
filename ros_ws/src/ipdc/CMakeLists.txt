@@ -12,8 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
-
+find_package(OpenCV REQUIRED)
+find_package(catkin REQUIRED cv_bridge)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -45,17 +45,16 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  Shape.msg
-)
+# add_message_files(
+#   FILES
+#   Shape.msg
+# )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  GetShapes.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -83,7 +82,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ipdc
   CATKIN_DEPENDS message_runtime roscpp rospy std_msgs
-#  DEPENDS system_lib
+  DEPENDS opencv2
 )
 
 ###########
@@ -96,6 +95,14 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
+include_directories(SYSTEM
+  ${OpenCV_INCLUDE_DIRS}
+)
+
+add_executable(shape_find_server src/ShapeFinder.cpp)
+target_link_libraries(shape_find_server ${catkin_LIBRARIES})
+add_dependencies(shape_find_server ipdc_gencpp)
 
 ## Declare a cpp library
 # add_library(ipdc
@@ -110,8 +117,8 @@ include_directories(
 # add_dependencies(ipdc_node ipdc_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(ipdc_node
-#   ${catkin_LIBRARIES}
+# target_link_libraries(opencv2
+#   ${OpenCV_LIBRARIES}
 # )
 
 #############

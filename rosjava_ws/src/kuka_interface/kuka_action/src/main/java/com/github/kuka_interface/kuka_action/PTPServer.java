@@ -8,6 +8,7 @@ import org.ros.node.service.ServiceResponseBuilder;
 import org.ros.node.service.ServiceServer;
 import no.hials.crosscom.CrossComClient;
 import no.hials.crosscom.KRL.structs.KRLPos;
+import no.hials.crosscom.KRL.structs.KRLE6Pos;
 
 public class PTPServer extends AbstractNodeMain {
 
@@ -17,7 +18,10 @@ public class PTPServer extends AbstractNodeMain {
     private static final double ATHRESH = .1;
     private static final double BTHRESH = .1;
     private static final double CTHRESH = .1;
+    private static final long TIMEOUT = 5000;
     private CrossComClient client;
+    private KRLPos pos;
+    private KRLE6Pos pos_act;
 
     @Override
     public GraphName getDefaultNodeName() {
@@ -30,8 +34,8 @@ public class PTPServer extends AbstractNodeMain {
 	} catch(Exception e){
 	    e.printStackTrace();
 	}
-	KRLPos pos = new KRLPos("MYPOS");
-	KRLE6Pos pos_act = new KRLE6Pos("$POS_ACT");
+	pos = new KRLPos("MYPOS");
+	pos_act = new KRLE6Pos("$POS_ACT");
 	connectedNode.newServiceServer("move_ptp", kuka_msgs.MovePTP._TYPE,new ServiceResponseBuilder<kuka_msgs.MovePTPRequest, kuka_msgs.MovePTPResponse>() {
 		public void build(kuka_msgs.MovePTPRequest request, kuka_msgs.MovePTPResponse response) {
 		    pos.setX(request.getX());
@@ -42,7 +46,11 @@ public class PTPServer extends AbstractNodeMain {
 		    pos.setC(request.getC());
 		    long start = System.currentTimeMillis();
 		    while(System.currentTimeMillis() - start < TIMEOUT){
-			client.readVariable(pos_act);
+			try{
+			    client.readVariable(pos_act);
+			} catch(Exception e){
+			    e.printStackTrace();
+			}
 			double xOff = Math.abs(pos_act.getX() - request.getX());
 			double yOff = Math.abs(pos_act.getY() - request.getY());
 			double zOff = Math.abs(pos_act.getZ() - request.getZ());

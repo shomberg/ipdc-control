@@ -21,6 +21,8 @@ const double sThreshHigh[COLOR_MAX] = {1, .35};
 const double vThreshLow[COLOR_MAX] =  {.3, 0};
 const double vThreshHigh[COLOR_MAX] = {1, .5};
 
+cv::VideoCapture cap(1);
+
 bool getShapes(ipdc::GetShapes::Request  &req,
 	       ipdc::GetShapes::Response &res)
 {
@@ -30,28 +32,26 @@ bool getShapes(ipdc::GetShapes::Request  &req,
   } else{
     color = COLOR;
   }
-
-  cv::VideoCapture cap(1);
-  cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
-  cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1080);
-  if(!cap.isOpened()){
-    return -1;
-  }
-
   cv::Mat frame;
-  cap >> frame;
-  cv::imwrite("pics/frame.png", frame);
+  for(int i = 0; i < 5; i++){
+    cap >> frame;
+  }
+  //ROS_INFO("SUccessfully captured frame");
+  //cv::imwrite("pics/frame.png", frame);
   cv::Mat hsvFrame;
   cv::cvtColor(frame, hsvFrame, CV_BGR2HSV);
+  //ROS_INFO("Converted to HSV");
 
   cv::Mat lowerBound(hsvFrame.size(), CV_8UC3, cv::Scalar((unsigned char)hThreshLow[color],(unsigned char)(sThreshLow[color]*255),(unsigned char)(vThreshLow[color]*255)));
   cv::Mat upperBound(hsvFrame.size(), CV_8UC3, cv::Scalar((unsigned char)hThreshHigh[color],(unsigned char)(sThreshHigh[color]*255),(unsigned char)(vThreshHigh[color]*255)));
     
   cv::Mat binary;
   cv::inRange(hsvFrame, lowerBound, upperBound, binary);
+  //ROS_INFO("Found colored pixels");
 
   std::vector<std::vector<cv::Point> > contours;
   cv::findContours(binary, contours, cv::noArray(), CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+  //ROS_INFO("Found shape contours");
 
   for(int i = 0; i < contours.size(); i++){
     if(P_TO_A_THRESH*cv::arcLength(contours[i],true) > cv::contourArea(contours[i]) || cv::contourArea(contours[i]) < AREA_THRESH){
@@ -59,28 +59,31 @@ bool getShapes(ipdc::GetShapes::Request  &req,
       i--;
     }
   }
+  //ROS_INFO("Trimmed artifacts");
 
   /*for(int i = 0; i < contours.size(); i++){
     cv::convexHull(contours[i], contours[i]);
     }*/
 
-  cv::Mat contourIm(frame.size(),CV_8UC3,cv::Scalar(0,0,0));
-  for(int i = 0; i < contours.size(); i++){
-    cv::drawContours(contourIm, contours, i, cv::Scalar(255,255,255));
-  }
+  //cv::Mat contourIm(frame.size(),CV_8UC3,cv::Scalar(0,0,0));
+  //for(int i = 0; i < contours.size(); i++){
+  //  cv::drawContours(contourIm, contours, i, cv::Scalar(255,255,255));
+  //}
 
-  std::vector<int> shapeIDs (-1,contours.size());
-  std::vector<double> centerX (-1,contours.size());
-  std::vector<double> centerY (-1,contours.size());
-  std::vector<double> areas (-1, contours.size());
-  std::vector<double> directions (-1, contours.size());
+  std::vector<int> shape_ids (contours.size(), -1);
+  std::vector<double> center_x (contours.size(), -1);
+  std::vector<double> center_y (contours.size(), -1);
+  std::vector<double> areas (contours.size(), -1);
+  std::vector<double> directions (contours.size(), -1);
+  //ROS_INFO("allocated some primitive vectors");
   
   //Shape recognition
   for(int i = 0; i < contours.size(); i++){
     cv::Moments moments = cv::moments(contours[i]);
     cv::Point2f centroid(moments.m10/moments.m00, moments.m01/moments.m00);
-    centerX[i] = centroid.x;
-    centerY[i] = centroid.x;
+    center_x[i] = centroid.x;
+    center_y[i] = centroid.y;
+    //ROS_INFO("found centroid");
     
     //find min and max dist from centroid
     //cv::Point2f minDistPoint(-1000,-1000), maxDistPoint(centroid);
@@ -101,32 +104,32 @@ bool getShapes(ipdc::GetShapes::Request  &req,
     //Results of distance checking
     ROS_INFO("Color: %s", colorNames[color]);
     ROS_INFO("Shape number %d", i);
-    ROS_INFO("%f", centroid);
-    ROS_INFO("max dist %f at dist %f", maxDistPoint, cv::norm(centroid-maxDistPoint));
+    ROS_INFO("x: %f, y: %f", centroid.x, centroid.y);
+    //ROS_INFO("max dist %s at dist %f", maxDistPoint, cv::norm(centroid-maxDistPoint));
     ROS_INFO("min dist %f", minDist);
     //Detect shape
     areas[i] = contourArea(contours[i]);
-    ROS_INFO("real area is %f");
+    ROS_INFO("real area is %f", areas[i]);
     int bestShape = -1;
     double bestArea = 0;
-    for(int shapeID = 0; shapeID < SHAPE_MAX; shapeID++){
+    for(int shape_id = 0; shape_id < SHAPE_MAX; shape_id++){
       double area;
-      if(shapeID <= POLY_MAX-3){
-	//area = (shapeID+3)*2*std::sqrt(std::pow(cv::norm(centroid-maxDistPoint),2)-std::pow(cv::norm(centroid-minDistPoint),2))*cv::norm(centroid-minDistPoint);
-	area = (shapeID+3)*std::sqrt(std::pow(cv::norm(centroid-maxDistPoint),2)-std::pow(minDist,2))*minDist;
-      } else if(shapeID == ELLIPSE){
+      if(shape_id <= POLY_MAX-3){
+	//area = (shape_id+3)*2*std::sqrt(std::pow(cv::norm(centroid-maxDistPoint),2)-std::pow(cv::norm(centroid-minDistPoint),2))*cv::norm(centroid-minDistPoint);
+	area = (shape_id+3)*std::sqrt(std::pow(cv::norm(centroid-maxDistPoint),2)-std::pow(minDist,2))*minDist;
+      } else if(shape_id == ELLIPSE){
 	//area = M_PI*cv::norm(centroid-maxDistPoint)*cv::norm(centroid-minDistPoint);
 	area = M_PI*cv::norm(centroid-maxDistPoint)*minDist;
       } else{
 	area = 0;
       }
-      ROS_INFO("trying shape %s getting area %f", shapeNames[shapeID], area);
+      //ROS_INFO("trying shape %s getting area %f", shapeNames[shape_id], area);
       if(std::abs(area - areas[i]) < std::abs(bestArea-areas[i])){
-	bestShape = shapeID;
+	bestShape = shape_id;
 	bestArea = area;
       }
     }
-    shapeIDs[i] = bestShape;
+    shape_ids[i] = bestShape;
     //Results of analysis:
     if(bestShape < 0){
       ROS_INFO("no good match");
@@ -135,6 +138,12 @@ bool getShapes(ipdc::GetShapes::Request  &req,
     }
   }
 
+  res.shape_id = shape_ids;
+  res.center_x = center_x;
+  res.center_y = center_y;
+  res.area = areas;
+  res.direction = directions;
+
   return true;
 }
 
@@ -142,6 +151,13 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "get_shapes_server");
   ros::NodeHandle n;
+
+  cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
+  cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1080);
+  if(!cap.isOpened()){
+    return -1;
+  }
+  ROS_INFO("Successfully opened camera");
 
   ros::ServiceServer service = n.advertiseService("get_shapes", getShapes);
   ROS_INFO("Ready to find shapes.");

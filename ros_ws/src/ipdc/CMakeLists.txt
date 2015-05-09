@@ -6,14 +6,14 @@ project(ipdc)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  rospy
   std_msgs
   message_generation
+  cv_bridge
 )
 
 ## System dependencies are found with CMake's conventions
 find_package(OpenCV REQUIRED)
-find_package(catkin REQUIRED cv_bridge)
+#find_package(catkin REQUIRED cv_bridge)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -64,10 +64,10 @@ add_service_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -81,7 +81,7 @@ add_service_files(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ipdc
-  CATKIN_DEPENDS message_runtime roscpp rospy std_msgs
+  CATKIN_DEPENDS message_runtime roscpp std_msgs
   DEPENDS opencv2
 )
 
@@ -100,9 +100,9 @@ include_directories(SYSTEM
   ${OpenCV_INCLUDE_DIRS}
 )
 
-add_executable(shape_find_server src/ShapeFinder.cpp)
+add_executable(shape_find_server src/shape_finder.cpp)
 target_link_libraries(shape_find_server ${catkin_LIBRARIES})
-add_dependencies(shape_find_server ipdc_gencpp)
+add_dependencies(shape_find_server ipdc_generate_messages_cpp)
 
 ## Declare a cpp library
 # add_library(ipdc

@@ -6,6 +6,7 @@
 
 #define P_TO_A_THRESH 5
 #define AREA_THRESH 100
+#define ALPHA 2
 
 enum color_t {COLOR, GRAY, COLOR_MAX};
 const char* colorNames[COLOR_MAX] = {"Colored", "Gray"};
@@ -21,7 +22,7 @@ const double sThreshHigh[COLOR_MAX] = {1, .35};
 const double vThreshLow[COLOR_MAX] =  {.3, 0};
 const double vThreshHigh[COLOR_MAX] = {1, .5};
 
-cv::VideoCapture cap(1);
+cv::VideoCapture cap(0);
 
 bool getShapes(ipdc::GetShapes::Request  &req,
 	       ipdc::GetShapes::Response &res)
@@ -36,10 +37,19 @@ bool getShapes(ipdc::GetShapes::Request  &req,
   for(int i = 0; i < 5; i++){
     cap >> frame;
   }
-  //ROS_INFO("SUccessfully captured frame");
+  cv::Mat new_frame = cv::Mat::zeros( frame.size(), frame.type() );
+  for( int y = 0; y < frame.rows; y++ ){
+    for( int x = 0; x < frame.cols; x++ ){
+      for( int c = 0; c < 3; c++ ){
+	new_frame.at<cv::Vec3b>(y,x)[c] = cv::saturate_cast<uchar>(ALPHA*( frame.at<cv::Vec3b>(y,x)[c] ));
+      }
+    }
+  }
+  
+  //ROS_INFO("Successfully captured frame");
   //cv::imwrite("pics/frame.png", frame);
   cv::Mat hsvFrame;
-  cv::cvtColor(frame, hsvFrame, CV_BGR2HSV);
+  cv::cvtColor(new_frame, hsvFrame, CV_BGR2HSV);
   //ROS_INFO("Converted to HSV");
 
   cv::Mat lowerBound(hsvFrame.size(), CV_8UC3, cv::Scalar((unsigned char)hThreshLow[color],(unsigned char)(sThreshLow[color]*255),(unsigned char)(vThreshLow[color]*255)));

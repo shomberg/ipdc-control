@@ -4,6 +4,7 @@
 
 #define P_TO_A_THRESH 5
 #define AREA_THRESH 100
+#define ALPHA 2
 
 enum color_t {COLOR, GRAY, COLOR_MAX};
 const char* colorNames[COLOR_MAX] = {"Colored", "Gray"};
@@ -14,13 +15,13 @@ const char* shapeNames[SHAPE_MAX] = {"Triangle", "Rectangle", "Pentagon", "Ellip
 
 const int hThreshLow[COLOR_MAX] =     {0, 0};
 const int hThreshHigh[COLOR_MAX] =    {180, 180};
-const double sThreshLow[COLOR_MAX] =  {.4, 0};
-const double sThreshHigh[COLOR_MAX] = {1, .35};
-const double vThreshLow[COLOR_MAX] =  {.3, 0};
-const double vThreshHigh[COLOR_MAX] = {1, .5};
+const double sThreshLow[COLOR_MAX] =  {.3, 0};
+const double sThreshHigh[COLOR_MAX] = {1, .5};
+const double vThreshLow[COLOR_MAX] =  {.8, .4};
+const double vThreshHigh[COLOR_MAX] = {1, .8};
 
 int main(void){
-  cv::VideoCapture cap(1);
+  cv::VideoCapture cap(0);
   cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
   cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1080);
   if(!cap.isOpened()){
@@ -30,8 +31,17 @@ int main(void){
   cv::Mat frame;
   cap >> frame;
   cv::imwrite("pics/frame.png", frame);
+  cv::Mat new_frame = cv::Mat::zeros( frame.size(), frame.type() );
+  for( int y = 0; y < frame.rows; y++ ){
+    for( int x = 0; x < frame.cols; x++ ){
+      for( int c = 0; c < 3; c++ ){
+	new_frame.at<cv::Vec3b>(y,x)[c] = cv::saturate_cast<uchar>(ALPHA*( frame.at<cv::Vec3b>(y,x)[c] ));
+      }
+    }
+  }
+  cv::imwrite("pics/new_frame.png", new_frame);
   cv::Mat hsvFrame;
-  cv::cvtColor(frame, hsvFrame, CV_BGR2HSV);
+  cv::cvtColor(new_frame, hsvFrame, CV_BGR2HSV);
 
   for(int color = 0; color < COLOR_MAX; color++){
 

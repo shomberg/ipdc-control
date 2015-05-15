@@ -19,7 +19,7 @@ public class PTPServer extends AbstractNodeMain {
     private static final double ATHRESH = .1;
     private static final double BTHRESH = .1;
     private static final double CTHRESH = .1;
-    private static final long TIMEOUT = 5000;
+    private static final long TIMEOUT = 10000;
     private CrossComClient client;
     //private KRLPos pos;
     private KRLFrame pos;

@@ -21,7 +21,7 @@ const double sThreshLow[COLOR_MAX] =  {.3, 0};
 const double sThreshHigh[COLOR_MAX] = {1, .5};
 const double vThreshLow[COLOR_MAX] =  {.7, .4};
 const double vThreshHigh[COLOR_MAX] = {1, .8};
-const cv::Rect regionOfInterest(180, 100, 350, 220);
+const cv::Rect regionOfInterest(170, 20, 330, 240);
 
 cv::VideoCapture cap(0);
 

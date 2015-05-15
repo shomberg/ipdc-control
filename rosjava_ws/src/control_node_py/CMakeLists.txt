@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(kuka_msgs)
+project(control_node_py)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  message_generation
+  rospy
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -49,11 +50,11 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
-add_service_files(
-  FILES
-  MovePTP.srv
-  SetGrip.srv
-)
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -63,10 +64,10 @@ add_service_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-#  DEPENDENCIES
-#  std_msgs  # Or other packages containing msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
 
 ###################################
 ## catkin specific configuration ##
@@ -79,8 +80,8 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES kuka_msgs
-#  CATKIN_DEPENDS other_catkin_pkg
+#  LIBRARIES control_node_py
+#  CATKIN_DEPENDS rospy std_msgs
 #  DEPENDS system_lib
 )
 
@@ -91,21 +92,24 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
 
 ## Declare a cpp library
-# add_library(kuka_msgs
-#   src/${PROJECT_NAME}/kuka_msgs.cpp
+# add_library(control_node_py
+#   src/${PROJECT_NAME}/control_node_py.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(kuka_msgs_node src/kuka_msgs_node.cpp)
+# add_executable(control_node_py_node src/control_node_py_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(kuka_msgs_node kuka_msgs_generate_messages_cpp)
+# add_dependencies(control_node_py_node control_node_py_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(kuka_msgs_node
+# target_link_libraries(control_node_py_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -124,7 +128,7 @@ catkin_package(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS kuka_msgs kuka_msgs_node
+# install(TARGETS control_node_py control_node_py_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -149,7 +153,7 @@ catkin_package(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_kuka_msgs.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_control_node_py.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

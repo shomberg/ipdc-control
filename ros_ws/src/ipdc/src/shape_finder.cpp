@@ -4,8 +4,8 @@
 #include <string>
 #include <cmath>
 
-#define P_TO_A_THRESH 5
-#define AREA_THRESH 100
+#define P_TO_A_THRESH 3
+#define AREA_THRESH 50
 #define ALPHA 2
 
 enum color_t {COLOR, GRAY, COLOR_MAX};
@@ -17,10 +17,11 @@ const char* shapeNames[SHAPE_MAX] = {"Triangle", "Rectangle", "Pentagon", "Ellip
 
 const int hThreshLow[COLOR_MAX] =     {0, 0};
 const int hThreshHigh[COLOR_MAX] =    {180, 180};
-const double sThreshLow[COLOR_MAX] =  {.4, 0};
-const double sThreshHigh[COLOR_MAX] = {1, .35};
-const double vThreshLow[COLOR_MAX] =  {.3, 0};
-const double vThreshHigh[COLOR_MAX] = {1, .5};
+const double sThreshLow[COLOR_MAX] =  {.3, 0};
+const double sThreshHigh[COLOR_MAX] = {1, .5};
+const double vThreshLow[COLOR_MAX] =  {.7, .4};
+const double vThreshHigh[COLOR_MAX] = {1, .8};
+const cv::Rect regionOfInterest(180, 100, 350, 220);
 
 cv::VideoCapture cap(0);
 
@@ -37,6 +38,7 @@ bool getShapes(ipdc::GetShapes::Request  &req,
   for(int i = 0; i < 5; i++){
     cap >> frame;
   }
+  frame = frame(regionOfInterest);
   cv::Mat new_frame = cv::Mat::zeros( frame.size(), frame.type() );
   for( int y = 0; y < frame.rows; y++ ){
     for( int x = 0; x < frame.cols; x++ ){
@@ -162,8 +164,8 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "get_shapes_server");
   ros::NodeHandle n;
 
-  cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
-  cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1080);
+  cap.set(CV_CAP_PROP_FRAME_WIDTH, 1600);
+  cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1200);
   if(!cap.isOpened()){
     return -1;
   }

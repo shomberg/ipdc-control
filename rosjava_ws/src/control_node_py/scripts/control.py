@@ -51,4 +51,4 @@ if __name__ == "__main__":
     print transformY
     for i in range(len(transformX)):
         pickup_client(transformX[i],transformY[i],True)
-        pickup_client(transformX[i]-150,transformY[i]+150,False)
+        pickup_client(transformX[i]-200,transformY[i]+150,False)
